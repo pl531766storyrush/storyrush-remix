@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <title>Story Rush</title>
+    <script>
+      // Define global for web safely
+      if (typeof globalThis !== 'undefined' && typeof globalThis.global === 'undefined') {
+        globalThis.global = globalThis;
+      }
+      if (typeof window !== 'undefined' && typeof window.global === 'undefined') {
+        window.global = window;
+      }
+      // Global Expo polyfill for Web
+      (function() {
+        window._activeEmitters = [];
+
+        class EventEmitter {
+          constructor() {
+            this.listeners = new Map();
+            window._activeEmitters.push(this);
+          }
+          addListener(eventName, listener) {
+            if (!this.listeners.has(eventName)) {
+              this.listeners.set(eventName, new Set());
+            }
+            this.listeners.get(eventName).add(listener);
+            return {
+              remove: () => {
+                this.removeListener(eventName, listener);
+              }
+            };
+          }
+          removeListener(eventName, listener) {
+            this.listeners.get(eventName)?.delete(listener);
+          }
+          removeAllListeners(eventName) {
+            if (eventName) {
+              this.listeners.get(eventName)?.clear();
+            } else {
+              this.listeners.clear();
+            }
+          }
+          emit(eventName, ...args) {
+            const listeners = this.listeners.get(eventName);
+            if (listeners) {
+              for (const listener of listeners) {
+                try {
+                  listener(...args);
+                } catch (e) {
+                  console.error(e);
+                }
+              }
+            }
+          }
+          listenerCount(eventName) {
+            return this.listeners.get(eventName)?.size ?? 0;
+          }
+        }
+
+        class NativeModule extends EventEmitter {}
+        class SharedObject extends EventEmitter {
+          release() {}
+        }
+        class SharedRef extends SharedObject {
+          constructor() {
+            super();
+            this.nativeRefType = 'unknown';
+          }
+        }
+
+        window.expo = {
+          EventEmitter,
+          NativeModule,
+          SharedObject,
+          SharedRef,
+          modules: {},
+          uuidv4: () => Math.random().toString(36).substring(2),
+          uuidv5: () => Math.random().toString(36).substring(2),
+          getViewConfig: () => { throw new Error('Not implemented'); },
+          reloadAppAsync: async () => { window.location.reload(); }
+        };
+
+        window.SyntheticPlatformEmitter = {
+          emit(eventName, data) {
+            if (window._activeEmitters) {
+              for (const emitter of window._activeEmitters) {
+                try {
+                  emitter.emit(eventName, data);
+                } catch (e) {
+                  console.error(e);
+                }
+              }
+            }
+          }
+        };
+      })();
+    </script>
+  </head>
+  <body class="bg-neutral-950 text-white font-sans antialiased">
+    <div id="root"></div>
+    <script type="module" src="/main.tsx"></script>
+  </body>
+</html>

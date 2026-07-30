@@ -1,0 +1,131 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "User profile with role and premium subscription metadata",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string" },
+        "displayName": { "type": "string" },
+        "photoURL": { "type": "string" },
+        "role": { "type": "string", "enum": ["user", "admin"] },
+        "isPremium": { "type": "boolean" },
+        "premiumExpiresAt": { "type": "string" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["uid", "email", "displayName", "role", "isPremium", "createdAt"]
+    },
+    "DramaCategory": {
+      "title": "DramaCategory",
+      "description": "Genre category catalog for organizing short drama series",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "icon": { "type": "string" },
+        "desc": { "type": "string" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["id", "name", "icon", "createdAt"]
+    },
+    "SeriesCatalog": {
+      "title": "SeriesCatalog",
+      "description": "A series or franchise catalog grouping multiple episodes together",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "category": { "type": "string" },
+        "thumbnailUrl": { "type": "string" },
+        "creator": { "type": "string" },
+        "tags": { "type": "array" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["id", "name", "category", "thumbnailUrl", "createdAt"]
+    },
+    "DramaEpisode": {
+      "title": "DramaEpisode",
+      "description": "An individual episode of a short drama vertical video",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "category": { "type": "string" },
+        "thumbnailUrl": { "type": "string" },
+        "videoUrl": { "type": "string" },
+        "likesCount": { "type": "number" },
+        "commentsCount": { "type": "number" },
+        "sharesCount": { "type": "number" },
+        "creator": { "type": "string" },
+        "duration": { "type": "number" },
+        "episodeNumber": { "type": "number" },
+        "seriesName": { "type": "string" },
+        "tags": { "type": "array" },
+        "createdAt": { "type": "string" },
+        "timestamp": { "type": "string" },
+        "isTrending": { "type": "boolean" },
+        "isFeatured": { "type": "boolean" }
+      },
+      "required": ["id", "title", "category", "thumbnailUrl", "videoUrl", "likesCount", "commentsCount", "sharesCount", "duration", "episodeNumber", "seriesName", "createdAt"]
+    },
+    "WatchHistory": {
+      "title": "WatchHistory",
+      "description": "Tracks playback progress for continue watching mechanics",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "dramaId": { "type": "string" },
+        "progress": { "type": "number" },
+        "duration": { "type": "number" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["id", "userId", "dramaId", "progress", "duration", "updatedAt"]
+    },
+    "Favorite": {
+      "title": "Favorite",
+      "description": "User's saved favorite episodes",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "dramaId": { "type": "string" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["id", "userId", "dramaId", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "UserProfile",
+      "description": "Stores user accounts and subscription states"
+    },
+    "/categories/{categoryId}": {
+      "schema": "DramaCategory",
+      "description": "System-wide genre categories list"
+    },
+    "/series/{seriesId}": {
+      "schema": "SeriesCatalog",
+      "description": "Shows and franchises directory metadata"
+    },
+    "/episodes/{episodeId}": {
+      "schema": "DramaEpisode",
+      "description": "Video metadata repository"
+    },
+    "/dramas/{dramaId}": {
+      "schema": "DramaEpisode",
+      "description": "Duplicate stream entry metadata for home list"
+    },
+    "/history/{historyId}": {
+      "schema": "WatchHistory",
+      "description": "Stores episode playback sessions"
+    },
+    "/favorites/{favoriteId}": {
+      "schema": "Favorite",
+      "description": "Stores saved favorites per user"
+    }
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "name": "Remix StoryRushNew",
+  "description": "Imported from GitHub: pl531766storyrush/Story_rush_app",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

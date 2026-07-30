@@ -1,0 +1,23 @@
+{
+  "expo": {
+    "name": "Story Rush",
+    "slug": "story-rush",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "dark",
+    "backgroundColor": "#000000",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.pl531766.storyrush"
+    },
+    "android": {
+      "package": "com.pl531766.storyrush",
+      "adaptiveIcon": {
+        "backgroundColor": "#000000"
+      }
+    },
+    "web": {
+      "bundler": "metro"
+    }
+  }
+}
