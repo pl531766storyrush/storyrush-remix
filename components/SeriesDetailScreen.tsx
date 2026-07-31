@@ -61,8 +61,10 @@ export default function SeriesDetailScreen({
       const loadGuest = () => {
         let guestUser: any = { uid: currentUser.uid, isPremium: false };
         try {
-          const stored = localStorage.getItem('storyrush_guest_user');
-          if (stored) guestUser = JSON.parse(stored);
+          if (typeof localStorage !== 'undefined') {
+            const stored = localStorage.getItem('storyrush_guest_user');
+            if (stored) guestUser = JSON.parse(stored);
+          }
         } catch (e) {}
         setUserProfile({ uid: guestUser.uid, isPremium: !!guestUser.isPremium });
       };

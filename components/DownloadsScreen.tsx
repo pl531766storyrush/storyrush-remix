@@ -32,11 +32,14 @@ interface DownloadsScreenProps {
 export default function DownloadsScreen({ onClose, onSelectDrama }: DownloadsScreenProps) {
   const [downloadedEpisodes, setDownloadedEpisodes] = useState<any[]>(() => {
     try {
-      const saved = localStorage.getItem('storyrush_downloads');
-      return saved ? JSON.parse(saved) : [];
+      if (typeof localStorage !== 'undefined') {
+        const saved = localStorage.getItem('storyrush_downloads');
+        return saved ? JSON.parse(saved) : [];
+      }
     } catch {
       return [];
     }
+    return [];
   });
 
   const handleDelete = (id: string, title: string) => {

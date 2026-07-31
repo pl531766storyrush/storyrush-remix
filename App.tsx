@@ -58,9 +58,11 @@ export default function App() {
   useEffect(() => {
     let guestUser: any = null;
     try {
-      const stored = localStorage.getItem('storyrush_guest_user');
-      if (stored) {
-        guestUser = JSON.parse(stored);
+      if (typeof localStorage !== 'undefined') {
+        const stored = localStorage.getItem('storyrush_guest_user');
+        if (stored) {
+          guestUser = JSON.parse(stored);
+        }
       }
     } catch (e) {
       console.warn("localStorage check failed:", e);
@@ -77,7 +79,9 @@ export default function App() {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       let currentIsGuest = false;
       try {
-        currentIsGuest = !!localStorage.getItem('storyrush_guest_user');
+        if (typeof localStorage !== 'undefined') {
+          currentIsGuest = !!localStorage.getItem('storyrush_guest_user');
+        }
       } catch (e) {}
 
       if (!currentIsGuest) {
@@ -157,7 +161,9 @@ export default function App() {
 
   const handleLogout = () => {
     try {
-      localStorage.removeItem('storyrush_guest_user');
+      if (typeof localStorage !== 'undefined') {
+        localStorage.removeItem('storyrush_guest_user');
+      }
     } catch (e) {}
     setCurrentUser(null);
     setActiveTab('home');

@@ -147,7 +147,9 @@ export default function AuthScreen({ onAuthSuccess }: AuthScreenProps) {
         await syncUserProfile(result.user);
       }
       try {
-        localStorage.removeItem('storyrush_guest_user');
+        if (typeof localStorage !== 'undefined') {
+          localStorage.removeItem('storyrush_guest_user');
+        }
       } catch (e) {}
       onAuthSuccess();
     } catch (err: any) {
@@ -171,7 +173,9 @@ export default function AuthScreen({ onAuthSuccess }: AuthScreenProps) {
       const result = await signInWithPopup(auth, provider);
       await syncUserProfile(result.user);
       try {
-        localStorage.removeItem('storyrush_guest_user');
+        if (typeof localStorage !== 'undefined') {
+          localStorage.removeItem('storyrush_guest_user');
+        }
       } catch (e) {}
       onAuthSuccess();
     } catch (err: any) {
@@ -207,7 +211,9 @@ export default function AuthScreen({ onAuthSuccess }: AuthScreenProps) {
       
       console.log("Generating local guest session:", guestUser);
       try {
-        localStorage.setItem('storyrush_guest_user', JSON.stringify(guestUser));
+        if (typeof localStorage !== 'undefined') {
+          localStorage.setItem('storyrush_guest_user', JSON.stringify(guestUser));
+        }
       } catch (e) {
         console.warn("localStorage setItem failed:", e);
       }

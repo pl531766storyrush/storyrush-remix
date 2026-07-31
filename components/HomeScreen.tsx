@@ -91,6 +91,25 @@ interface HomeSeriesItem {
 
 const ExpoVideo = Video as any;
 
+const safeMemoryStore = new Map<string, string>();
+const safeGetItem = (key: string): string | null => {
+  try {
+    if (typeof localStorage !== 'undefined') {
+      return localStorage.getItem(key);
+    }
+  } catch (e) {}
+  return safeMemoryStore.get(key) ?? null;
+};
+const safeSetItem = (key: string, value: string): void => {
+  try {
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem(key, value);
+      return;
+    }
+  } catch (e) {}
+  safeMemoryStore.set(key, value);
+};
+
 interface DramaCardItemProps {
   item: Drama;
   index: number;
@@ -1131,7 +1150,7 @@ export default function HomeScreen({
       const loadGuestProfile = () => {
         let guestUser = currentUser;
         try {
-          const stored = localStorage.getItem('storyrush_guest_user');
+          const stored = safeGetItem('storyrush_guest_user');
           if (stored) {
             guestUser = JSON.parse(stored);
           }
@@ -1325,7 +1344,7 @@ export default function HomeScreen({
   useEffect(() => {
     if (currentUser?.isGuest && dramas.length > 0) {
       try {
-        const likesOverrides = JSON.parse(localStorage.getItem(`likes_count_overrides_${currentUser.uid}`) || '{}');
+        const likesOverrides = JSON.parse(safeGetItem(`likes_count_overrides_${currentUser.uid}`) || '{}');
         
         let hasChanges = false;
         const updated = dramas.map(d => {
@@ -1336,7 +1355,7 @@ export default function HomeScreen({
             changed = true;
           }
           // Dynamically compute commentsCount from actual comments stored in localStorage for this drama
-          const storedComments = localStorage.getItem(`comments_${currentUser.uid}_${d.id}`);
+          const storedComments = safeGetItem(`comments_${currentUser.uid}_${d.id}`);
           let nextCommentsCount = d.commentsCount || 0;
           if (storedComments) {
             try {
@@ -1371,9 +1390,9 @@ export default function HomeScreen({
 
     if (currentUser.isGuest) {
       try {
-        const localLikes = JSON.parse(localStorage.getItem(`likes_${currentUser.uid}`) || '{}');
-        const localFavs = JSON.parse(localStorage.getItem(`favs_${currentUser.uid}`) || '{}');
-        const localFollows = JSON.parse(localStorage.getItem(`follows_${currentUser.uid}`) || '{}');
+        const localLikes = JSON.parse(safeGetItem(`likes_${currentUser.uid}`) || '{}');
+        const localFavs = JSON.parse(safeGetItem(`favs_${currentUser.uid}`) || '{}');
+        const localFollows = JSON.parse(safeGetItem(`follows_${currentUser.uid}`) || '{}');
         setLikedMap(localLikes);
         setFavoriteMap(localFavs);
         setFollowedMap(localFollows);
@@ -1461,7 +1480,7 @@ export default function HomeScreen({
     if (!currentUser) return;
     if (currentUser.isGuest) {
       try {
-        const localHistory = JSON.parse(localStorage.getItem(`history_${currentUser.uid}`) || '[]');
+        const localHistory = JSON.parse(safeGetItem(`history_${currentUser.uid}`) || '[]');
         const updated = [{
           id: `${currentUser.uid}_${drama.id}`,
           userId: currentUser.uid,
@@ -1470,7 +1489,7 @@ export default function HomeScreen({
           duration: drama.duration || 30,
           updatedAt: new Date().toISOString()
         }, ...localHistory.filter((item: any) => item.dramaId !== drama.id)];
-        localStorage.setItem(`history_${currentUser.uid}`, JSON.stringify(updated.slice(0, 50)));
+        safeSetItem(`history_${currentUser.uid}`, JSON.stringify(updated.slice(0, 50)));
       } catch (err) {
         // silent
       }
@@ -1503,7 +1522,7 @@ export default function HomeScreen({
       const newLikedMap = { ...likedMap, [dramaId]: nextLiked };
       setLikedMap(newLikedMap);
       try {
-        localStorage.setItem(`likes_${currentUser.uid}`, JSON.stringify(newLikedMap));
+        safeSetItem(`likes_${currentUser.uid}`, JSON.stringify(newLikedMap));
       } catch (err) {}
 
       // Update dramas state to update UI immediately & save overrides
@@ -1512,9 +1531,9 @@ export default function HomeScreen({
           const change = nextLiked ? 1 : -1;
           const nextCount = Math.max(0, (d.likesCount || 0) + change);
           try {
-            const localOverrides = JSON.parse(localStorage.getItem(`likes_count_overrides_${currentUser.uid}`) || '{}');
+            const localOverrides = JSON.parse(safeGetItem(`likes_count_overrides_${currentUser.uid}`) || '{}');
             localOverrides[dramaId] = nextCount;
-            localStorage.setItem(`likes_count_overrides_${currentUser.uid}`, JSON.stringify(localOverrides));
+            safeSetItem(`likes_count_overrides_${currentUser.uid}`, JSON.stringify(localOverrides));
           } catch (err) {}
           return {
             ...d,
@@ -1557,7 +1576,7 @@ export default function HomeScreen({
       const newFavMap = { ...favoriteMap, [dramaId]: nextFav };
       setFavoriteMap(newFavMap);
       try {
-        localStorage.setItem(`favs_${currentUser.uid}`, JSON.stringify(newFavMap));
+        safeSetItem(`favs_${currentUser.uid}`, JSON.stringify(newFavMap));
       } catch (err) {}
       return;
     }
@@ -1589,7 +1608,7 @@ export default function HomeScreen({
       const newFollowedMap = { ...followedMap, [followedId]: nextFollow };
       setFollowedMap(newFollowedMap);
       try {
-        localStorage.setItem(`follows_${currentUser.uid}`, JSON.stringify(newFollowedMap));
+        safeSetItem(`follows_${currentUser.uid}`, JSON.stringify(newFollowedMap));
       } catch (err) {}
       return;
     }
@@ -1659,7 +1678,7 @@ export default function HomeScreen({
 
     if (currentUser?.isGuest) {
       try {
-        const stored = localStorage.getItem(`comments_${currentUser.uid}_${drama.id}`);
+        const stored = safeGetItem(`comments_${currentUser.uid}_${drama.id}`);
         const guestComments: Comment[] = stored ? JSON.parse(stored) : [];
         guestComments.sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
         setComments(guestComments);
@@ -1749,7 +1768,7 @@ export default function HomeScreen({
       if (currentUser.isGuest) {
         let nextComments: Comment[] = [];
         try {
-          const stored = localStorage.getItem(`comments_${currentUser.uid}_${activeDrama.id}`);
+          const stored = safeGetItem(`comments_${currentUser.uid}_${activeDrama.id}`);
           nextComments = stored ? JSON.parse(stored) : [];
         } catch (e) {
           console.warn("Failed to read comments from localStorage", e);
@@ -1762,7 +1781,7 @@ export default function HomeScreen({
           nextComments.sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
           setComments(nextComments);
           try {
-            localStorage.setItem(`comments_${currentUser.uid}_${activeDrama.id}`, JSON.stringify(nextComments));
+            safeSetItem(`comments_${currentUser.uid}_${activeDrama.id}`, JSON.stringify(nextComments));
           } catch (err) {}
           showCommentToast("Comment edited successfully!");
           setEditingComment(null);
@@ -1787,7 +1806,7 @@ export default function HomeScreen({
           nextComments.sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
           setComments(nextComments);
           try {
-            localStorage.setItem(`comments_${currentUser.uid}_${activeDrama.id}`, JSON.stringify(nextComments));
+            safeSetItem(`comments_${currentUser.uid}_${activeDrama.id}`, JSON.stringify(nextComments));
           } catch (err) {}
 
           // Update commentsCount in UI to the actual length
@@ -1820,7 +1839,7 @@ export default function HomeScreen({
           nextComments.sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
           setComments(nextComments);
           try {
-            localStorage.setItem(`comments_${currentUser.uid}_${activeDrama.id}`, JSON.stringify(nextComments));
+            safeSetItem(`comments_${currentUser.uid}_${activeDrama.id}`, JSON.stringify(nextComments));
           } catch (err) {}
 
           // Update commentsCount in UI to the actual length
@@ -1940,7 +1959,7 @@ export default function HomeScreen({
 
     if (currentUser.isGuest) {
       try {
-        localStorage.setItem(`comments_${currentUser.uid}_${item.dramaId}`, JSON.stringify(
+        safeSetItem(`comments_${currentUser.uid}_${item.dramaId}`, JSON.stringify(
           comments.map(c => c.id === item.id ? { ...c, likes: newLikes } : c)
         ));
       } catch (err) {}
@@ -1976,7 +1995,7 @@ export default function HomeScreen({
       const nextComments = comments.filter(c => c.id !== item.id && c.parentId !== item.id);
       setComments(nextComments);
       try {
-        localStorage.setItem(`comments_${currentUser.uid}_${activeDrama.id}`, JSON.stringify(nextComments));
+        safeSetItem(`comments_${currentUser.uid}_${activeDrama.id}`, JSON.stringify(nextComments));
       } catch (err) {}
 
       // Update commentsCount in UI dynamically
@@ -2086,7 +2105,7 @@ export default function HomeScreen({
     if (!currentUser) return;
     if (currentUser.isGuest) {
       try {
-        const stored = localStorage.getItem(`history_${currentUser.uid}`);
+        const stored = safeGetItem(`history_${currentUser.uid}`);
         if (stored) {
           setHomeHistory(JSON.parse(stored));
         }
@@ -2109,12 +2128,12 @@ export default function HomeScreen({
     if (!currentUser?.isGuest || dramas.length === 0) return;
     try {
       const key = `history_${currentUser.uid}`;
-      const stored = localStorage.getItem(key);
+      const stored = safeGetItem(key);
       if (stored) {
         const parsed = JSON.parse(stored);
         const valid = parsed.filter((item: any) => dramas.some(d => d.id === item.dramaId || d.id === item.id));
         if (valid.length !== parsed.length) {
-          localStorage.setItem(key, JSON.stringify(valid));
+          safeSetItem(key, JSON.stringify(valid));
           setHomeHistory(valid);
         }
       }

@@ -182,7 +182,9 @@ export default function SubscriptionScreen({ currentUser, onSuccess }: Subscript
         currentUser.purchaseDate = new Date().toISOString();
         currentUser.expiryDate = expiresAt.toISOString();
         try {
-          localStorage.setItem('storyrush_guest_user', JSON.stringify(currentUser));
+          if (typeof localStorage !== 'undefined') {
+            localStorage.setItem('storyrush_guest_user', JSON.stringify(currentUser));
+          }
         } catch (e) {}
         setIsPremium(true);
         setShowPaymentModal(false);

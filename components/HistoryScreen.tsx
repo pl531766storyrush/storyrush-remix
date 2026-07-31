@@ -52,7 +52,9 @@ export default function HistoryScreen({
             setLocalHistory([]);
             if (currentUser?.uid) {
               try {
-                localStorage.removeItem(`history_${currentUser.uid}`);
+                if (typeof localStorage !== 'undefined') {
+                  localStorage.removeItem(`history_${currentUser.uid}`);
+                }
               } catch (e) {}
             }
           }

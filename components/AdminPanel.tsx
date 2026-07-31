@@ -292,10 +292,14 @@ export default function AdminPanel({ onClose }: AdminPanelProps) {
 
   // Save Cloudinary Configuration locally
   const handleSaveCloudinaryConfig = () => {
-    localStorage.setItem('storyrush_cloudinary_cloud_name', cloudinaryCloudName.trim());
-    localStorage.setItem('storyrush_cloudinary_upload_preset', cloudinaryUploadPreset.trim());
-    localStorage.setItem('storyrush_cloudinary_api_key', cloudinaryApiKey.trim());
-    localStorage.setItem('storyrush_cloudinary_api_secret', cloudinaryApiSecret.trim());
+    try {
+      if (typeof localStorage !== 'undefined') {
+        localStorage.setItem('storyrush_cloudinary_cloud_name', cloudinaryCloudName.trim());
+        localStorage.setItem('storyrush_cloudinary_upload_preset', cloudinaryUploadPreset.trim());
+        localStorage.setItem('storyrush_cloudinary_api_key', cloudinaryApiKey.trim());
+        localStorage.setItem('storyrush_cloudinary_api_secret', cloudinaryApiSecret.trim());
+      }
+    } catch (e) {}
     Alert.alert('Config Saved', 'Cloudinary configuration updated and saved locally!');
   };
 

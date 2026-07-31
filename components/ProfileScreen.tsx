@@ -80,9 +80,11 @@ export default function ProfileScreen({
       const loadProfile = () => {
         let guestUser = currentUser;
         try {
-          const stored = localStorage.getItem('storyrush_guest_user');
-          if (stored) {
-            guestUser = JSON.parse(stored);
+          if (typeof localStorage !== 'undefined') {
+            const stored = localStorage.getItem('storyrush_guest_user');
+            if (stored) {
+              guestUser = JSON.parse(stored);
+            }
           }
         } catch (e) {}
 
@@ -105,20 +107,22 @@ export default function ProfileScreen({
         liveDramas.sort((a, b) => (a.episodeNumber || 0) - (b.episodeNumber || 0));
 
         try {
-          const localHistory = JSON.parse(localStorage.getItem(`history_${currentUser.uid}`) || '[]');
-          const historyWithDrama = localHistory.map((h: any) => {
-            const matching = liveDramas.find(d => d.id === h.dramaId);
-            return {
-              ...h,
-              drama: matching
-            };
-          }).filter((h: any) => !!h.drama);
-          
-          setHistoryList(historyWithDrama);
+          if (typeof localStorage !== 'undefined') {
+            const localHistory = JSON.parse(localStorage.getItem(`history_${currentUser.uid}`) || '[]');
+            const historyWithDrama = localHistory.map((h: any) => {
+              const matching = liveDramas.find(d => d.id === h.dramaId);
+              return {
+                ...h,
+                drama: matching
+              };
+            }).filter((h: any) => !!h.drama);
+            
+            setHistoryList(historyWithDrama);
 
-          const localFavs = JSON.parse(localStorage.getItem(`favs_${currentUser.uid}`) || '{}');
-          const favoritesWithDrama = liveDramas.filter(d => !!localFavs[d.id]);
-          setFavoritesList(favoritesWithDrama);
+            const localFavs = JSON.parse(localStorage.getItem(`favs_${currentUser.uid}`) || '{}');
+            const favoritesWithDrama = liveDramas.filter(d => !!localFavs[d.id]);
+            setFavoritesList(favoritesWithDrama);
+          }
         } catch (err) {
           console.warn("Failed to load guest data for ProfileScreen", err);
         }
