@@ -460,24 +460,31 @@ const DramaCardItem = ({
   };
 
   const handlePointerDown = (e: any) => {
+    if (e.stopPropagation) e.stopPropagation();
     if (e.button !== undefined && e.button !== 0) return;
     isSeekingRef.current = true;
     setIsSeeking(true);
     try {
-      e.target.setPointerCapture(e.pointerId);
+      if (e.target && e.target.setPointerCapture) {
+        e.target.setPointerCapture(e.pointerId);
+      }
     } catch (err) {}
     handleSeek(e.clientX, false);
   };
 
   const handlePointerMove = (e: any) => {
+    if (e.stopPropagation) e.stopPropagation();
     if (!isSeekingRef.current) return;
     handleSeek(e.clientX, false);
   };
 
   const handlePointerUp = (e: any) => {
+    if (e.stopPropagation) e.stopPropagation();
     if (!isSeekingRef.current) return;
     try {
-      e.target.releasePointerCapture(e.pointerId);
+      if (e.target && e.target.releasePointerCapture) {
+        e.target.releasePointerCapture(e.pointerId);
+      }
     } catch (err) {}
 
     // Perform final high-precision seek
@@ -576,6 +583,8 @@ const DramaCardItem = ({
       {/* Tap Gesture Handler Overlay */}
       <div
         onClick={handleCardPress}
+        onTouchStart={(e) => e.stopPropagation()}
+        onTouchEnd={(e) => e.stopPropagation()}
         style={{
           position: 'absolute',
           top: 0,
@@ -900,6 +909,8 @@ const DramaCardItem = ({
             onPointerMove={handlePointerMove}
             onPointerUp={handlePointerUp}
             onPointerCancel={handlePointerUp}
+            onTouchStart={(e) => e.stopPropagation()}
+            onTouchEnd={(e) => e.stopPropagation()}
             style={{
               flex: 1,
               height: 16, // larger hit target area

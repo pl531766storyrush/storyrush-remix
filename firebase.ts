@@ -69,8 +69,9 @@ interface FirestoreErrorInfo {
  * Handles Firestore exceptions and formats them into a strict diagnostic JSON string.
  */
 export function handleFirestoreError(error: unknown, operationType: OperationType, path: string | null): never {
+  const errorMessage = error instanceof Error ? error.message : String(error);
   const errInfo: FirestoreErrorInfo = {
-    error: error instanceof Error ? error.message : String(error),
+    error: errorMessage,
     authInfo: {
       userId: auth.currentUser?.uid || null,
       email: auth.currentUser?.email || null,
@@ -78,8 +79,8 @@ export function handleFirestoreError(error: unknown, operationType: OperationTyp
       isAnonymous: auth.currentUser?.isAnonymous || null,
       tenantId: auth.currentUser?.tenantId || null,
       providerInfo: auth.currentUser?.providerData?.map(provider => ({
-        providerId: provider.providerId,
-        email: provider.email,
+        providerId: provider.providerId || null,
+        email: provider.email || null,
       })) || []
     },
     operationType,
@@ -89,21 +90,28 @@ export function handleFirestoreError(error: unknown, operationType: OperationTyp
   // Safe circular-resistant stringify helper
   const safeStringify = (obj: any, indent?: number) => {
     try {
-      const seen = new WeakSet();
+      const cache = new Set();
       return JSON.stringify(obj, (key, value) => {
         if (typeof value === 'object' && value !== null) {
-          if (seen.has(value)) {
+          if (cache.has(value)) {
             return '[Circular]';
           }
-          seen.add(value);
+          cache.add(value);
+          if (typeof window !== 'undefined' && (value instanceof Node || value instanceof Event)) {
+            return String(value);
+          }
+        }
+        if (typeof value === 'bigint') {
+          return value.toString();
         }
         return value;
       }, indent);
     } catch (e) {
-      return String(obj);
+      return String(errorMessage);
     }
   };
 
-  console.error('Firestore Error Diagnostics: ', safeStringify(errInfo, 2));
-  throw new Error(safeStringify(errInfo));
+  const logStr = safeStringify(errInfo, 2);
+  console.error('Firestore Error Diagnostics: ', logStr);
+  throw new Error(logStr);
 }
