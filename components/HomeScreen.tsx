@@ -22,7 +22,7 @@ import {
   Alert,
   ScrollView
 } from 'react-native';
-import { Video, ResizeMode } from 'expo-video';
+import { Video, ResizeMode } from './VideoPlayer';
 import { 
   collection, 
   query, 
@@ -565,10 +565,9 @@ const DramaCardItem = ({
   };
 
   return (
-    <Pressable 
+    <View 
       id={`drama-card-${item.id}`}
       nativeID={`drama-card-${item.id}`}
-      onPress={() => {}}
       style={[
         { height: itemHeight, width: '100%', position: 'relative', backgroundColor: '#000' },
         !isDesktopFrame ? { height: '100dvh' } as any : {}
@@ -1015,7 +1014,7 @@ const DramaCardItem = ({
           </View>
         </View>
       )}
-    </Pressable>
+    </View>
   );
 };
 

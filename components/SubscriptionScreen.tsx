@@ -39,6 +39,28 @@ interface SubscriptionScreenProps {
 }
 
 export default function SubscriptionScreen({ currentUser, onSuccess }: SubscriptionScreenProps) {
+  // Helper to safely serialize and save guest user session to localStorage without circular references
+  const saveGuestUserSession = (user: any) => {
+    if (!user || typeof localStorage === 'undefined') return;
+    try {
+      const cleanUser = {
+        uid: user.uid,
+        displayName: user.displayName || '',
+        email: user.email || '',
+        photoURL: user.photoURL || '',
+        isGuest: !!user.isGuest,
+        isPremium: !!user.isPremium,
+        premium: !!user.premium,
+        subscriptionPlan: user.subscriptionPlan || null,
+        purchaseDate: user.purchaseDate || null,
+        expiryDate: user.expiryDate || null,
+      };
+      localStorage.setItem('storyrush_guest_user', JSON.stringify(cleanUser));
+    } catch (e) {
+      console.warn('Failed to save guest user session:', e);
+    }
+  };
+
   const [selectedPlan, setSelectedPlan] = useState<'weekly' | 'monthly' | 'yearly'>('monthly');
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -182,9 +204,7 @@ export default function SubscriptionScreen({ currentUser, onSuccess }: Subscript
         currentUser.purchaseDate = new Date().toISOString();
         currentUser.expiryDate = expiresAt.toISOString();
         try {
-          if (typeof localStorage !== 'undefined') {
-            localStorage.setItem('storyrush_guest_user', JSON.stringify(currentUser));
-          }
+          saveGuestUserSession(currentUser);
         } catch (e) {}
         setIsPremium(true);
         setShowPaymentModal(false);
@@ -245,7 +265,7 @@ export default function SubscriptionScreen({ currentUser, onSuccess }: Subscript
           delete currentUser.purchaseDate;
           delete currentUser.expiryDate;
           try {
-            localStorage.setItem('storyrush_guest_user', JSON.stringify(currentUser));
+            saveGuestUserSession(currentUser);
           } catch (e) {}
         } else {
           await updateDoc(doc(db, 'users', currentUser.uid), {
@@ -273,7 +293,7 @@ export default function SubscriptionScreen({ currentUser, onSuccess }: Subscript
           currentUser.purchaseDate = new Date().toISOString();
           currentUser.expiryDate = expiresAt.toISOString();
           try {
-            localStorage.setItem('storyrush_guest_user', JSON.stringify(currentUser));
+            saveGuestUserSession(currentUser);
           } catch (e) {}
         } else {
           await updateDoc(doc(db, 'users', currentUser.uid), {
