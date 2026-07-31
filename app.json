@@ -4,6 +4,7 @@
     "slug": "story-rush",
     "version": "1.0.0",
     "orientation": "portrait",
+    "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
     "backgroundColor": "#000000",
     "ios": {
@@ -13,6 +14,7 @@
     "android": {
       "package": "com.pl531766.storyrush",
       "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#000000"
       }
     },
@@ -20,7 +22,7 @@
       "bundler": "metro"
     },
     "plugins": [
-      "expo-av"
+      "expo-video"
     ]
   }
 }

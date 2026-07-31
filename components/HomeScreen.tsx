@@ -22,7 +22,7 @@ import {
   Alert,
   ScrollView
 } from 'react-native';
-import { Video, ResizeMode } from 'expo-av';
+import { Video, ResizeMode } from 'expo-video';
 import { 
   collection, 
   query, 
@@ -220,7 +220,7 @@ const DramaCardItem = ({
     const expoVideoInstance = videoRefs.current[item.id];
     if (!expoVideoInstance) return null;
     
-    // 1. Try common expo-av web internal property names
+    // 1. Try common expo-video web internal property names
     if (expoVideoInstance._video instanceof HTMLVideoElement) {
       return expoVideoInstance._video;
     }

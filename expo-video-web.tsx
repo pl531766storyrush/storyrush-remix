@@ -1,4 +1,4 @@
-import React, { forwardRef, useImperativeHandle, useRef, useEffect } from 'react';
+import React, { forwardRef, useImperativeHandle, useRef, useEffect, useState } from 'react';
 
 export enum ResizeMode {
   CONTAIN = 'contain',
@@ -6,23 +6,31 @@ export enum ResizeMode {
   STRETCH = 'stretch',
 }
 
+export type VideoContentFit = 'contain' | 'cover' | 'fill' | 'none' | 'scale-down';
+
 export interface VideoProps {
-  source: { uri: string } | any;
-  resizeMode?: ResizeMode;
+  source: { uri: string } | string | any;
+  resizeMode?: ResizeMode | string;
+  contentFit?: VideoContentFit | string;
   shouldPlay?: boolean;
   isLooping?: boolean;
   isMuted?: boolean;
   style?: any;
+  nativeControls?: boolean;
+  useNativeControls?: boolean;
+  playsInline?: boolean;
   onPlaybackStatusUpdate?: (status: any) => void;
   onLoad?: (status: any) => void;
   onReadyForDisplay?: () => void;
   onError?: (error: any) => void;
+  player?: any;
 }
 
 export const Video = forwardRef<any, VideoProps>((props, ref) => {
   const { 
     source, 
     resizeMode, 
+    contentFit,
     shouldPlay, 
     isLooping, 
     isMuted, 
@@ -30,12 +38,12 @@ export const Video = forwardRef<any, VideoProps>((props, ref) => {
     onPlaybackStatusUpdate,
     onLoad,
     onReadyForDisplay,
-    onError
+    onError,
   } = props;
   
   const videoRef = useRef<HTMLVideoElement>(null);
 
-  // Expose the playback functions expected by HomeScreen
+  // Expose the playback functions expected by components
   useImperativeHandle(ref, () => ({
     playAsync: async () => {
       if (videoRef.current) {
@@ -87,11 +95,11 @@ export const Video = forwardRef<any, VideoProps>((props, ref) => {
     videoRef.current.muted = !!isMuted;
   }, [isMuted]);
 
-  // Determine objectFit style based on ResizeMode
+  // Determine objectFit style based on ResizeMode or contentFit
   let objectFit: 'contain' | 'cover' | 'fill' = 'cover';
-  if (resizeMode === ResizeMode.CONTAIN) {
+  if (contentFit === 'contain' || resizeMode === ResizeMode.CONTAIN || resizeMode === 'contain') {
     objectFit = 'contain';
-  } else if (resizeMode === ResizeMode.STRETCH) {
+  } else if (contentFit === 'fill' || resizeMode === ResizeMode.STRETCH || resizeMode === 'stretch') {
     objectFit = 'fill';
   }
 
@@ -207,7 +215,48 @@ export const Video = forwardRef<any, VideoProps>((props, ref) => {
   );
 });
 
+export const VideoView = Video;
+
+export function useVideoPlayer(source: any, setup?: (player: any) => void) {
+  const [player] = useState(() => ({
+    playing: false,
+    muted: false,
+    loop: false,
+    currentTime: 0,
+    duration: 0,
+    play: () => {},
+    pause: () => {},
+    seekBy: () => {},
+    addListener: () => ({ remove: () => {} }),
+  }));
+
+  useEffect(() => {
+    if (setup) {
+      setup(player);
+    }
+  }, [player, setup]);
+
+  return player;
+}
+
+export function createVideoPlayer(source: any) {
+  return {
+    playing: false,
+    muted: false,
+    loop: false,
+    currentTime: 0,
+    duration: 0,
+    play: () => {},
+    pause: () => {},
+    seekBy: () => {},
+    addListener: () => ({ remove: () => {} }),
+  };
+}
+
 export default {
   Video,
+  VideoView,
+  useVideoPlayer,
+  createVideoPlayer,
   ResizeMode,
 };

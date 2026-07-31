@@ -29,7 +29,7 @@ export default defineConfig(() => {
         'react-native-web/Libraries/Utilities/codegenNativeComponent': path.resolve(__dirname, 'mockCodegen.ts'),
         'react-native/Libraries/Utilities/codegenNativeComponent': path.resolve(__dirname, 'mockCodegen.ts'),
         'react-native': path.resolve(__dirname, 'react-native-web-wrapper.ts'),
-        'expo-av': path.resolve(__dirname, 'expo-av-web.tsx'),
+        'expo-video': path.resolve(__dirname, 'expo-video-web.tsx'),
         'lucide-react-native': 'lucide-react',
       },
     },
@@ -38,7 +38,7 @@ export default defineConfig(() => {
       global: 'globalThis',
     },
     optimizeDeps: {
-      exclude: ['expo-av', 'expo-modules-core'],
+      exclude: ['expo-video', 'expo-modules-core'],
       esbuildOptions: {
         loader: {
           '.js': 'jsx' as const,
