@@ -193,8 +193,11 @@ const DramaCardItem = ({
   // Memoized video source to prevent reload/reset of player on state changes
   const videoSource = useMemo(() => ({ uri: currentVideoUrl }), [currentVideoUrl]);
 
-  // Helper to safely locate the native HTML5 <video> element for direct currentTime manipulation
+  // Helper to safely locate the native HTML5 <video> element for direct currentTime manipulation (web-only)
   const getNativeVideoElement = () => {
+    if (Platform.OS !== 'web' || typeof HTMLVideoElement === 'undefined' || typeof document === 'undefined') {
+      return null;
+    }
     const expoVideoInstance = videoRefs.current[item.id];
     if (!expoVideoInstance) return null;
     

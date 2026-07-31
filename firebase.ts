@@ -3,8 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { initializeApp } from 'firebase/app';
-import { getAuth } from 'firebase/auth';
+import { initializeApp, getApps, getApp } from 'firebase/app';
+import { getAuth, initializeAuth, inMemoryPersistence } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 
 // Existing Dramax Firebase Project Configuration
@@ -17,13 +17,27 @@ const explicitConfig = {
   messagingSenderId: "586296251513"
 };
 
-const app = initializeApp(explicitConfig);
+const app = getApps().length > 0 ? getApp() : initializeApp(explicitConfig);
 
-// Initialize Firebase Auth & Firestore
-export const auth = getAuth(app);
+// Initialize Firebase Auth & Firestore with defensive fallbacks for Native platforms
+let authInstance: any;
+try {
+  authInstance = getAuth(app);
+} catch (e) {
+  try {
+    authInstance = initializeAuth(app, {
+      persistence: inMemoryPersistence
+    });
+  } catch (err) {
+    authInstance = getAuth(app);
+  }
+}
+
+export const auth = authInstance;
 
 // Use the existing live database ID for the real dramax-1fb42 project
 export const db = getFirestore(app, "ai-studio-storyrushapp-82c2c98a-8e57-4d4c-893c-62d4a8b52c16");
+
 
 export enum OperationType {
   CREATE = 'create',

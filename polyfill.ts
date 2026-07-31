@@ -1,3 +1,24 @@
+// Global Polyfills for React Native and Web environment safety
+
+if (typeof globalThis !== 'undefined') {
+  if (typeof (globalThis as any).global === 'undefined') {
+    (globalThis as any).global = globalThis;
+  }
+}
+
+// In-memory polyfill for localStorage in Native Android/iOS environments
+if (typeof globalThis.localStorage === 'undefined') {
+  const memoryStore = new Map<string, string>();
+  (globalThis as any).localStorage = {
+    getItem: (key: string) => memoryStore.get(String(key)) ?? null,
+    setItem: (key: string, value: string) => { memoryStore.set(String(key), String(value)); },
+    removeItem: (key: string) => { memoryStore.delete(String(key)); },
+    clear: () => { memoryStore.clear(); },
+    key: (index: number) => Array.from(memoryStore.keys())[index] ?? null,
+    get length() { return memoryStore.size; }
+  };
+}
+
 // Define global and __DEV__ for React Native Web and other node-style dependencies
 if (typeof window !== 'undefined') {
   (window as any).__DEV__ = false;
@@ -32,21 +53,23 @@ if (typeof window !== 'undefined') {
   };
 
   // Gracefully handle and suppress specific unhandled touch responder and circular JSON issues in web
-  window.addEventListener('error', (event) => {
-    const msg = event.message || '';
-    if (msg.includes('Cannot find single active touch') || msg.includes('Converting circular structure to JSON')) {
-      event.preventDefault();
-      console.warn('[Ignored Exception]:', msg);
-    }
-  });
+  if (window.addEventListener) {
+    window.addEventListener('error', (event) => {
+      const msg = event.message || '';
+      if (msg.includes('Cannot find single active touch') || msg.includes('Converting circular structure to JSON')) {
+        event.preventDefault();
+        console.warn('[Ignored Exception]:', msg);
+      }
+    });
 
-  window.addEventListener('unhandledrejection', (event) => {
-    const reasonStr = String(event.reason || '');
-    if (reasonStr.includes('Cannot find single active touch') || reasonStr.includes('Converting circular structure to JSON')) {
-      event.preventDefault();
-      console.warn('[Ignored Rejection]:', reasonStr);
-    }
-  });
+    window.addEventListener('unhandledrejection', (event) => {
+      const reasonStr = String(event.reason || '');
+      if (reasonStr.includes('Cannot find single active touch') || reasonStr.includes('Converting circular structure to JSON')) {
+        event.preventDefault();
+        console.warn('[Ignored Rejection]:', reasonStr);
+      }
+    });
+  }
 
   // Circular-safe JSON stringify helper
   function safeJsonStringify(obj: any): string {
@@ -98,8 +121,4 @@ if (typeof window !== 'undefined') {
     }
   };
 }
-if (typeof globalThis !== 'undefined') {
-  if (typeof (globalThis as any).global === 'undefined') {
-    (globalThis as any).global = globalThis;
-  }
-}
+
