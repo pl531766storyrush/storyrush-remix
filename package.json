@@ -11,7 +11,7 @@
   },
   "dependencies": {
     "expo": "~57.0.9",
-    "expo-av": "^13.10.6",
+    "expo-av": "^16.0.8",
     "firebase": "^10.8.0",
     "lucide-react": "^0.354.0",
     "lucide-react-native": "^0.354.0",
