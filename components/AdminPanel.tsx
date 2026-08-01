@@ -322,12 +322,56 @@ export default function AdminPanel({ onClose }: AdminPanelProps) {
     return path;
   };
 
-  // Helper to generate SHA-1 hash for secure Cloudinary signature
+  // Helper to generate SHA-1 hash for secure Cloudinary signature with native JS fallback
   const sha1 = async (str: string): Promise<string> => {
-    const utf8 = new TextEncoder().encode(str);
-    const hashBuffer = await crypto.subtle.digest('SHA-1', utf8);
-    const hashArray = Array.from(new Uint8Array(hashBuffer));
-    return hashArray.map((bytes) => bytes.toString(16).padStart(2, '0')).join('');
+    if (typeof crypto !== 'undefined' && crypto.subtle && typeof TextEncoder !== 'undefined') {
+      try {
+        const utf8 = new TextEncoder().encode(str);
+        const hashBuffer = await crypto.subtle.digest('SHA-1', utf8);
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        return hashArray.map((bytes) => bytes.toString(16).padStart(2, '0')).join('');
+      } catch (e) {}
+    }
+    // Pure JS SHA-1 fallback for React Native / Hermes
+    const rotateLeft = (n: number, s: number) => (n << s) | (n >>> (32 - s));
+    const hex = (val: number) => {
+      let h = '';
+      for (let i = 7; i >= 0; i--) {
+        h += ((val >>> (i * 4)) & 0x0f).toString(16);
+      }
+      return h;
+    };
+
+    let blockstart = 0;
+    const blocks: number[] = [];
+    for (let i = 0; i < str.length; i++) {
+      blocks[i >> 2] |= str.charCodeAt(i) << (24 - (i % 4) * 8);
+    }
+    const len = str.length * 8;
+    blocks[len >> 5] |= 0x80 << (24 - (len % 32));
+    blocks[(((len + 64) >> 9) << 4) + 15] = len;
+
+    const w: number[] = new Array(80);
+    let a = 1732584193, b = -271733879, c = -1732584194, d = 271733878, e = -1009589776;
+
+    for (let i = 0; i < blocks.length; i += 16) {
+      const olda = a, oldb = b, oldc = c, oldd = d, olde = e;
+      for (let j = 0; j < 80; j++) {
+        if (j < 16) w[j] = blocks[i + j] || 0;
+        else w[j] = rotateLeft(w[j - 3] ^ w[j - 8] ^ w[j - 14] ^ w[j - 16], 1);
+
+        let t = 0;
+        if (j < 20) t = (b & c) | (~b & d) + 1518500249;
+        else if (j < 40) t = (b ^ c ^ d) + 1859775393;
+        else if (j < 60) t = (b & c) | (b & d) | (c & d) - 1894007588;
+        else t = (b ^ c ^ d) - 899497514;
+
+        t = (rotateLeft(a, 5) + t + e + w[j]) | 0;
+        e = d; d = c; c = rotateLeft(b, 30); b = a; a = t;
+      }
+      a = (a + olda) | 0; b = (b + oldb) | 0; c = (c + oldc) | 0; d = (d + oldd) | 0; e = (e + olde) | 0;
+    }
+    return (hex(a) + hex(b) + hex(c) + hex(d) + hex(e)).toLowerCase();
   };
 
   // Delete asset from Cloudinary securely
