@@ -154,7 +154,7 @@ export default function HistoryScreen({
                         <Text style={tw`text-[9px] text-red-400 font-extrabold uppercase`}>Resume</Text>
                       </View>
                       <Text style={tw`text-[9px] text-neutral-500 font-medium`}>
-                        {item.watchedAt ? new Date(item.watchedAt).toLocaleDateString() : 'Recently'}
+                        {item.watchedAt ? new Date(item.watchedAt).toISOString().slice(0, 10) : 'Recently'}
                       </Text>
                     </View>
                   </View>

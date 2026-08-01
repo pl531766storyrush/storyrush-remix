@@ -6,6 +6,7 @@
 import { initializeApp, getApps, getApp } from 'firebase/app';
 import { getAuth, initializeAuth, inMemoryPersistence } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
+import { Platform } from 'react-native';
 
 // Existing Dramax Firebase Project Configuration
 const explicitConfig = {
@@ -21,15 +22,29 @@ const app = getApps().length > 0 ? getApp() : initializeApp(explicitConfig);
 
 // Initialize Firebase Auth & Firestore with defensive fallbacks for Native platforms
 let authInstance: any;
-try {
-  authInstance = getAuth(app);
-} catch (e) {
+if (Platform.OS !== 'web') {
   try {
     authInstance = initializeAuth(app, {
       persistence: inMemoryPersistence
     });
-  } catch (err) {
+  } catch (e) {
+    try {
+      authInstance = getAuth(app);
+    } catch (err) {
+      authInstance = null;
+    }
+  }
+} else {
+  try {
     authInstance = getAuth(app);
+  } catch (e) {
+    try {
+      authInstance = initializeAuth(app, {
+        persistence: inMemoryPersistence
+      });
+    } catch (err) {
+      authInstance = null;
+    }
   }
 }
 

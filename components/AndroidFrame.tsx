@@ -19,7 +19,9 @@ export default function AndroidFrame({ children }: AndroidFrameProps) {
   useEffect(() => {
     const updateTime = () => {
       const now = new Date();
-      setTime(now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }));
+      const hours = String(now.getHours()).padStart(2, '0');
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+      setTime(`${hours}:${minutes}`);
     };
     updateTime();
     const interval = setInterval(updateTime, 1000);

@@ -43,7 +43,7 @@ import tw from 'twrnc';
 
 type Tab = 'home' | 'categories' | 'search' | 'subscription' | 'profile';
 
-export default function App() {
+function App() {
   const { width } = useWindowDimensions();
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [authLoading, setAuthLoading] = useState(true);
@@ -407,5 +407,52 @@ export default function App() {
     <View style={[tw`flex-1 bg-black`, Platform.OS === 'web' ? { height: '100dvh', minHeight: '100dvh', maxHeight: '100dvh', overflow: 'hidden' } as any : {}]}>
       {renderMobileContent()}
     </View>
+  );
+}
+
+class ErrorBoundary extends React.Component<
+  { children: React.ReactNode },
+  { hasError: boolean; error: any }
+> {
+  constructor(props: { children: React.ReactNode }) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+
+  static getDerivedStateFromError(error: any) {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error: any, errorInfo: any) {
+    console.error('[App ErrorBoundary Caught Exception]:', error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <View style={tw`flex-1 bg-black justify-center items-center p-6`}>
+          <Text style={tw`text-red-500 font-black text-lg mb-2`}>App Error Encountered</Text>
+          <Text style={tw`text-neutral-400 text-xs text-center mb-6 leading-relaxed`}>
+            {String(this.state.error?.message || this.state.error || 'An unexpected error occurred.')}
+          </Text>
+          <TouchableOpacity
+            onPress={() => this.setState({ hasError: false, error: null })}
+            style={tw`bg-red-600 px-6 py-3 rounded-xl`}
+          >
+            <Text style={tw`text-white font-bold text-xs uppercase tracking-wider`}>Reload Story Rush</Text>
+          </TouchableOpacity>
+        </View>
+      );
+    }
+
+    return this.props.children;
+  }
+}
+
+export default function AppWithErrorBoundary() {
+  return (
+    <ErrorBoundary>
+      <App />
+    </ErrorBoundary>
   );
 }

@@ -57,6 +57,61 @@ const NativeVideo = forwardRef<any, VideoProps>((props, ref) => {
   } = props;
 
   const videoUri = typeof source === 'object' && source !== null ? source.uri : source;
+  const safeSource = (typeof videoUri === 'string' && videoUri.trim().length > 0) ? videoUri.trim() : null;
+
+  // Unconditionally call nativeUseVideoPlayer hook if available, passing safeSource
+  const player = nativeUseVideoPlayer ? nativeUseVideoPlayer(safeSource, (p: any) => {
+    if (p) {
+      p.loop = !!isLooping;
+      p.muted = !!isMuted;
+      if (shouldPlay) {
+        try { p.play(); } catch (e) {}
+      }
+    }
+  }) : null;
+
+  useEffect(() => {
+    if (!player) return;
+    try {
+      if (shouldPlay) {
+        player.play();
+      } else {
+        player.pause();
+      }
+    } catch (e) {}
+  }, [player, shouldPlay]);
+
+  useEffect(() => {
+    if (!player) return;
+    try {
+      player.loop = !!isLooping;
+    } catch (e) {}
+  }, [player, isLooping]);
+
+  useEffect(() => {
+    if (!player) return;
+    try {
+      player.muted = !!isMuted;
+    } catch (e) {}
+  }, [player, isMuted]);
+
+  useImperativeHandle(ref, () => ({
+    playAsync: async () => { try { player?.play(); } catch (e) {} },
+    pauseAsync: async () => { try { player?.pause(); } catch (e) {} },
+    stopAsync: async () => { try { player?.pause(); } catch (e) {} },
+    setPositionAsync: async (millis: number) => {
+      try {
+        if (player) player.currentTime = millis / 1000;
+      } catch (e) {}
+    },
+  }));
+
+  useEffect(() => {
+    if (player) {
+      if (onLoad) onLoad({ isLoaded: true, isPlaying: player.playing });
+      if (onReadyForDisplay) onReadyForDisplay();
+    }
+  }, [player]);
 
   let fit: any = 'cover';
   if (contentFit) {
@@ -67,61 +122,18 @@ const NativeVideo = forwardRef<any, VideoProps>((props, ref) => {
     fit = 'fill';
   }
 
-  if (nativeUseVideoPlayer && NativeVideoView) {
-    const player = nativeUseVideoPlayer(videoUri, (p: any) => {
-      p.loop = !!isLooping;
-      p.muted = !!isMuted;
-      if (shouldPlay) {
-        p.play();
-      }
-    });
-
-    useEffect(() => {
-      if (!player) return;
-      if (shouldPlay) {
-        player.play();
-      } else {
-        player.pause();
-      }
-    }, [player, shouldPlay]);
-
-    useEffect(() => {
-      if (!player) return;
-      player.loop = !!isLooping;
-    }, [player, isLooping]);
-
-    useEffect(() => {
-      if (!player) return;
-      player.muted = !!isMuted;
-    }, [player, isMuted]);
-
-    useImperativeHandle(ref, () => ({
-      playAsync: async () => { player?.play(); },
-      pauseAsync: async () => { player?.pause(); },
-      stopAsync: async () => { player?.pause(); },
-      setPositionAsync: async (millis: number) => {
-        if (player) player.currentTime = millis / 1000;
-      },
-    }));
-
-    useEffect(() => {
-      if (player) {
-        if (onLoad) onLoad({ isLoaded: true, isPlaying: player.playing });
-        if (onReadyForDisplay) onReadyForDisplay();
-      }
-    }, [player]);
-
-    return (
-      <NativeVideoView
-        style={style}
-        player={player}
-        contentFit={fit}
-        nativeControls={false}
-      />
-    );
+  if (!nativeUseVideoPlayer || !NativeVideoView || !player || !safeSource) {
+    return <View style={style} />;
   }
 
-  return <View style={style} />;
+  return (
+    <NativeVideoView
+      style={style}
+      player={player}
+      contentFit={fit}
+      nativeControls={false}
+    />
+  );
 });
 
 // Web Video Component (HTML5 <video>)

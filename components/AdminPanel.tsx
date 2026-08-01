@@ -1126,19 +1126,19 @@ export default function AdminPanel({ onClose }: AdminPanelProps) {
 
               <View style={tw`flex-1 min-w-[100px] bg-neutral-900 border border-neutral-800 p-3.5 rounded-2xl`}>
                 <Heart size={16} color="#f472b6" style={tw`mb-2`} />
-                <Text style={tw`text-lg font-black text-white`}>{totalLikes.toLocaleString()}</Text>
+                <Text style={tw`text-lg font-black text-white`}>{String(totalLikes).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}</Text>
                 <Text style={tw`text-[9px] text-neutral-500 uppercase font-black`}>Total Likes</Text>
               </View>
 
               <View style={tw`flex-1 min-w-[100px] bg-neutral-900 border border-neutral-800 p-3.5 rounded-2xl`}>
                 <MessageSquare size={16} color="#4ade80" style={tw`mb-2`} />
-                <Text style={tw`text-lg font-black text-white`}>{totalComments.toLocaleString()}</Text>
+                <Text style={tw`text-lg font-black text-white`}>{String(totalComments).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}</Text>
                 <Text style={tw`text-[9px] text-neutral-500 uppercase font-black`}>Total Comments</Text>
               </View>
 
               <View style={tw`flex-1 min-w-[100px] bg-neutral-900 border border-neutral-800 p-3.5 rounded-2xl`}>
                 <Share2 size={16} color="#fb923c" style={tw`mb-2`} />
-                <Text style={tw`text-lg font-black text-white`}>{totalShares.toLocaleString()}</Text>
+                <Text style={tw`text-lg font-black text-white`}>{String(totalShares).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}</Text>
                 <Text style={tw`text-[9px] text-neutral-500 uppercase font-black`}>Total Shares</Text>
               </View>
             </View>

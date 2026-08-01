@@ -308,9 +308,11 @@ export default function SubscriptionScreen({ currentUser, onSuccess }: Subscript
           });
         }
         setIsPremium(true);
+        const expH = String(expiresAt.getHours()).padStart(2, '0');
+        const expM = String(expiresAt.getMinutes()).padStart(2, '0');
         Alert.alert(
           'Developer Test Mode', 
-          `Premium activated successfully! Expiring in 10 minutes (at ${expiresAt.toLocaleTimeString()}) to test automatic expiration.`
+          `Premium activated successfully! Expiring in 10 minutes (at ${expH}:${expM}) to test automatic expiration.`
         );
       }
       onSuccess();
